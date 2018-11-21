@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
-
+import pdb
 
 # Device configuration
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -48,6 +48,7 @@ class ConvNet(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2))
         self.fc = nn.Linear(7*7*32, num_classes)
         
+        
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
@@ -55,12 +56,13 @@ class ConvNet(nn.Module):
         out = self.fc(out)
         return out
 
+# pdb.set_trace()
 model = ConvNet(num_classes).to(device)
 
 # Loss and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
+"""
 # Train the model
 total_step = len(train_loader)
 for epoch in range(num_epochs):
@@ -69,7 +71,7 @@ for epoch in range(num_epochs):
         labels = labels.to(device)
         
         # Forward pass
-        outputs = model(images)
+        outputs, = model(images)
         loss = criterion(outputs, labels)
         
         # Backward and optimize
@@ -80,6 +82,9 @@ for epoch in range(num_epochs):
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                    .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+"""
+# pdb.set_trace()
+model.load_state_dict(torch.load('./model.ckpt'))
 
 # Test the model
 model.eval()  # eval mode (batchnorm uses moving mean/variance instead of mini-batch mean/variance)
@@ -89,6 +94,7 @@ with torch.no_grad():
     for images, labels in test_loader:
         images = images.to(device)
         labels = labels.to(device)
+        pdb.set_trace()
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
